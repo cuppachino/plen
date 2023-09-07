@@ -1,0 +1,74 @@
+{
+  "name": "@cuppachino/boiler",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./utils": {
+      "import": "./dist/esm/utils/index.js",
+      "require": "./dist/cjs/utils/index.js"
+    },
+    "./types": {
+      "import": "./dist/esm/types/index.js",
+      "require": "./dist/cjs/types/index.js"
+    },
+    "./errors": {
+      "import": "./dist/esm/errors/index.js",
+      "require": "./dist/cjs/errors/index.js"
+    },
+    "./modules": {
+      "import": "./dist/esm/modules/index.js",
+      "require": "./dist/cjs/modules/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json && pnpm resolve-tspaths --out ./dist/cjs",
+    "build:esm": "tsc -p ./tsconfig.json && pnpm resolve-tspaths --out ./dist/esm",
+    "build:scripts": "tsc ./scripts/copy-json.ts --outDir ./scripts --module nodenext",
+    "build": "pnpm clean && pnpm build:cjs && pnpm build:esm && pnpm postbuild",
+    "build:start": "pnpm build && pnpm clear && pnpm start",
+    "postbuild": "pnpm build:scripts && node ./scripts/copy-json.js | pino-pretty -c -t && pnpm clean:scripts",
+    "clean:scripts": "rimraf ./scripts/copy-json.js",
+    "clean": "rimraf ./dist",
+    "clear": "node -e \"process.stdout.write('\\u001B[2J\\u001B[0;0f')\"",
+    "start": "node ./dist/cjs/index.js | pino-pretty -c -t",
+    "format": "prettier --write ./src/**/*.{ts,js,tsx,jsx,json,md}",
+    "version-package": "changeset version && pnpm format",
+    "release": "pnpm typecheck && pnpm test && pnpm build && changeset publish"
+  },
+  "keywords": [],
+  "author": "Jacob Bergholtz <cuppachino.dev@gmail.com>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@changesets/cli": "^2.26.2",
+    "@types/node": "^20.5.9",
+    "expect-type": "^0.16.0",
+    "prettier": "^3.0.3",
+    "resolve-tspaths": "^0.8.15",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/.git/**",
+      "**/test/**",
+      "**/scripts/**",
+      "**/dist/**",
+      "**/node_modules/**"
+    ]
+  },
+  "dependencies": {
+    "pino": "^8.15.0",
+    "ts-custom-error": "^3.3.1",
+    "tslib": "^2.6.2"
+  }
+}

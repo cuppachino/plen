@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "baseUrl": "./",
+    "declaration": true,
+    "outDir": "./dist/esm",
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": false,
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@": ["src/index.ts"],
+      "@/*": ["src/*"],
+      "@/decorators": ["src/decorators/index.ts"],
+      "@/errors": ["src/errors/index.ts"],
+      "@/modules": ["src/modules/index.ts"],
+      "@/types": ["src/types/index.ts"],
+      "@/types/common": ["src/types/index.ts"],
+      "@/utils": ["src/utils/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
