@@ -1,4 +1,4 @@
-import type { ErrorKind } from '@/types/errors/error-kind.js'
+import type { ErrorKind } from '@/types/error-kind.js'
 import { CustomError } from 'ts-custom-error'
 
 /**
