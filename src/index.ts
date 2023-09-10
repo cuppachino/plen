@@ -1,4 +1,3 @@
-import { logger } from '@/utils/logger.js'
 import { bound } from '@/decorators/bound.js'
 import type { Constructor } from '@/types/common/constructor.js'
 import type { Nullable } from '@/types/common/nullable.js'
@@ -219,7 +218,7 @@ class Ecs<const Schedules extends readonly string[]> {
           const requiredResource = this.resources.get(resource)!
           requiredResources.push(requiredResource)
         }
-        // logger.debug({requiredComponents, requiredResources}, "dependencies for system")
+        // console.debug(requiredComponents, requiredResources)
         system.fn(requiredComponents, requiredResources)
       }
     }
@@ -300,11 +299,12 @@ class Ecs<const Schedules extends readonly string[]> {
       return
     }
     if (entity) {
+      console.count(`running for ${entity}`)
       const components = this.entities.getComponents(entity)!
       const dependencies = system.dependencies
       if (components.hasAll(dependencies)) {
         this.systems.addEntity(system, entity)
-        logger.debug({ entity }, 'linked an entity to a system')
+        console.debug('adding', entity, 'linked to a system')
       } else {
         this.systems.deleteEntity(system, entity)
       }
@@ -322,9 +322,9 @@ class Position extends Component {
 }
 
 class Health extends Component {
-  public hp = 4
-  public hpMax = 20
   public hp5 = 2.5
+  public hp = 4
+  public max = 20
 }
 
 class Timer extends Component {
@@ -348,7 +348,7 @@ const timerSystem = system(
 )
 
 const moveLivingThings = system(
-  ([pos, health]) => {
+  ([pos, hp]) => {
     pos.x++
     pos.y++
   },
@@ -357,20 +357,34 @@ const moveLivingThings = system(
 
 const regenHealth = system(
   ([hp], [time]) => {
-    if (hp.hp < hp.hpMax) {
-      hp.hp = Math.min(hp.hp + (time.elapsed / 5000) * hp.hp5, hp.hpMax)
+    if (hp.hp < hp.max) {
+      hp.hp = Math.min(hp.hp + (time.elapsed / 5000) * hp.hp5, hp.max)
     }
   },
   [Health],
   [Timer]
 )
 
+class Bird extends Component {
+  public name = 'bird'
+}
+
 const debug = system(
-  ([health, pos], [timer]) => {
-    logger.info(JSON.stringify({ ...health, ...pos }))
+  ([bird, health, pos], [timer]) => {
+    console.log(bird, health, pos)
+    // console.debug(timer);
   },
-  [Health, Position],
+  [Bird, Health, Position],
   [Timer]
+)
+
+const doBirdLife = system(
+  ([_, pos, hp]) => {
+    pos.x = pos.x + 20
+    pos.y = pos.y + 40
+    hp.hp = hp.hp - 1
+  },
+  [Bird, Position, Health]
 )
 
 ecs.addComponent(Timer)
@@ -380,6 +394,9 @@ ecs.addComponent([Position, Health])
 ecs.addSystem(moveLivingThings, 'update') // order doesn't matter.
 ecs.addSystem(regenHealth, 'update')
 
+ecs.addComponent([Bird, Position, Health])
+ecs.addSystem(doBirdLife, 'update')
+
 ecs.addSystem(debug, 'startup', 'update')
 
 const sleep = (n: number) => new Promise((resolve) => setTimeout(resolve, n))
@@ -388,8 +405,8 @@ const loop = async (fn: () => void, max: number, ms = 1000) => {
     fn()
     await sleep(ms)
   }
-  logger.info('all done')
+  console.log('all done')
 }
 
 ecs.run('startup') // todo! schedule flow
-loop(() => ecs.run('update'), 10, 1000)
+loop(() => ecs.run('update'), 5, 1000)
