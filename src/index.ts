@@ -300,7 +300,6 @@ class Ecs<const Schedules extends readonly string[]> {
       return
     }
     if (entity) {
-      console.count(`running for ${entity}`)
       const components = this.entities.getComponents(entity)!
       const dependencies = system.dependencies
       if (components.hasAll(dependencies)) {
@@ -323,9 +322,9 @@ class Position extends Component {
 }
 
 class Health extends Component {
+  public hp = 4
+  public hpMax = 20
   public hp5 = 2.5
-  public current = 4
-  public max = 20
 }
 
 class Timer extends Component {
@@ -343,14 +342,13 @@ const timerSystem = system(
     timer.elapsed = elapsed
     timer.tick = timer.tick + elapsed
     timer.previous = prev
-    // logger.info({ timer });
   },
   [],
   [Timer]
 )
 
 const moveLivingThings = system(
-  ([pos, hp]) => {
+  ([pos, health]) => {
     pos.x++
     pos.y++
   },
@@ -359,8 +357,9 @@ const moveLivingThings = system(
 
 const regenHealth = system(
   ([hp], [time]) => {
-    // logger.info({ hp, time });
-    hp.current = hp.current + (time.elapsed / 5000) * hp.hp5
+    if (hp.hp < hp.hpMax) {
+      hp.hp = Math.min(hp.hp + (time.elapsed / 5000) * hp.hp5, hp.hpMax)
+    }
   },
   [Health],
   [Timer]
@@ -368,8 +367,7 @@ const regenHealth = system(
 
 const debug = system(
   ([health, pos], [timer]) => {
-    logger.debug(JSON.stringify({ health, pos }))
-    // logger.debug({timer});
+    logger.info(JSON.stringify({ ...health, ...pos }))
   },
   [Health, Position],
   [Timer]
@@ -394,4 +392,4 @@ const loop = async (fn: () => void, max: number, ms = 1000) => {
 }
 
 ecs.run('startup') // todo! schedule flow
-loop(() => ecs.run('update'), 5, 1000)
+loop(() => ecs.run('update'), 10, 1000)
