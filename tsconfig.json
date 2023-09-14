@@ -19,6 +19,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
+    "noImplicitAny": false,
     "paths": {
       "@": ["src/index.ts"],
       "@/*": ["src/*"],
